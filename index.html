@@ -4954,12 +4954,19 @@
       <button class="tab-item" data-view="more" title="更多" aria-label="更多"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2C12.9 8.1 15.9 11.1 20.8 12 15.9 12.9 12.9 15.9 12 20.8 11.1 15.9 8.1 12.9 3.2 12 8.1 11.1 11.1 8.1 12 3.2Z"/></svg></button>
     </nav>
   </main>
-<!-- ===== 自动跳过开屏补丁开始 ===== -->
+  <!-- ===== 终极去弹窗补丁开始 ===== -->
   <style>
-    /* 强行隐藏两个开屏界面 */
+    /* 隐藏原来的开屏和小测 */
     #ageGate, #quizGate { display: none !important; }
-    /* 防止出现黑屏等待，直接显示主界面 */
     html.gate-early .app-shell { display: flex !important; }
+    
+    /* 隐藏新手引导、更新提醒、备份提醒的遮罩层 */
+    #onboardView, 
+    #backupRemind, 
+    #updateRemind, 
+    #updNotice { 
+      display: none !important; 
+    }
   </style>
   <script>
     (function() {
@@ -4967,41 +4974,54 @@
       try {
         localStorage.setItem('ordinal-age-test-skip', '1');
         localStorage.setItem('ordinal-age-reload-soft', '1');
+        // 尝试写入新手引导已完成的标记（猜测可能的名字）
+        localStorage.setItem('ordinal-onboard-done', '1');
+        localStorage.setItem('onboarded', '1');
       } catch(e) {}
 
-      // 循环尝试点击“同意”和“提交”，强制通过所有检测
+      // 循环尝试点击各种“同意”、“稍后”、“开始使用”
       var timer = setInterval(function() {
         try {
-          // 自动勾选公告
+          // 1. 公告和小测的自动点击
           var agCheck = document.getElementById('ageGateCheck');
           if (agCheck && agCheck.disabled) {
             agCheck.disabled = false;
             agCheck.checked = true;
             agCheck.dispatchEvent(new Event('change'));
           }
-          // 自动点公告的进入
           var agEnter = document.getElementById('ageGateEnter');
           if (agEnter && agEnter.disabled) {
             agEnter.disabled = false;
             agEnter.click();
           }
-          
-          // 自动点小测的提交和进入
           var qgSubmit = document.getElementById('quizGateSubmit');
-          if (qgSubmit && qgSubmit.offsetParent !== null) { // 如果可见就点
-            qgSubmit.click();
-          }
+          if (qgSubmit && qgSubmit.offsetParent !== null) qgSubmit.click();
           var qgEnter = document.getElementById('quizGateEnter');
-          if (qgEnter && qgEnter.offsetParent !== null) {
-            qgEnter.click();
-          }
+          if (qgEnter && qgEnter.offsetParent !== null) qgEnter.click();
+
+          // 2. 干掉新手引导（点击“开始使用”）
+          var obDone = document.querySelector('.ob-done');
+          if (obDone) obDone.click();
+
+          // 3. 干掉备份提醒（点击“稍后再说”）
+          var bkLater = document.getElementById('bkLater');
+          if (bkLater) bkLater.click();
+
+          // 4. 干掉更新提醒（点击“稍后”）
+          var upLater = document.getElementById('upLater');
+          if (upLater) upLater.click();
+
+          // 5. 干掉更新公告（如果有的话）
+          var updOk = document.getElementById('updNoticeOk');
+          if (updOk) updOk.click();
+
         } catch(e) {}
       }, 100);
       
-      // 5秒后停止尝试，防止一直运行占内存
+      // 5秒后停止尝试
       setTimeout(function() { clearInterval(timer); }, 5000);
     })();
   </script>
-  <!-- ===== 自动跳过开屏补丁结束 ===== -->
+  <!-- ===== 终极去弹窗补丁结束 ===== -->
 </body>
 </html>
