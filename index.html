@@ -4954,5 +4954,54 @@
       <button class="tab-item" data-view="more" title="更多" aria-label="更多"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2C12.9 8.1 15.9 11.1 20.8 12 15.9 12.9 12.9 15.9 12 20.8 11.1 15.9 8.1 12.9 3.2 12 8.1 11.1 11.1 8.1 12 3.2Z"/></svg></button>
     </nav>
   </main>
+<!-- ===== 自动跳过开屏补丁开始 ===== -->
+  <style>
+    /* 强行隐藏两个开屏界面 */
+    #ageGate, #quizGate { display: none !important; }
+    /* 防止出现黑屏等待，直接显示主界面 */
+    html.gate-early .app-shell { display: flex !important; }
+  </style>
+  <script>
+    (function() {
+      // 写入本地存储标记，让源码逻辑认为已经通过
+      try {
+        localStorage.setItem('ordinal-age-test-skip', '1');
+        localStorage.setItem('ordinal-age-reload-soft', '1');
+      } catch(e) {}
+
+      // 循环尝试点击“同意”和“提交”，强制通过所有检测
+      var timer = setInterval(function() {
+        try {
+          // 自动勾选公告
+          var agCheck = document.getElementById('ageGateCheck');
+          if (agCheck && agCheck.disabled) {
+            agCheck.disabled = false;
+            agCheck.checked = true;
+            agCheck.dispatchEvent(new Event('change'));
+          }
+          // 自动点公告的进入
+          var agEnter = document.getElementById('ageGateEnter');
+          if (agEnter && agEnter.disabled) {
+            agEnter.disabled = false;
+            agEnter.click();
+          }
+          
+          // 自动点小测的提交和进入
+          var qgSubmit = document.getElementById('quizGateSubmit');
+          if (qgSubmit && qgSubmit.offsetParent !== null) { // 如果可见就点
+            qgSubmit.click();
+          }
+          var qgEnter = document.getElementById('quizGateEnter');
+          if (qgEnter && qgEnter.offsetParent !== null) {
+            qgEnter.click();
+          }
+        } catch(e) {}
+      }, 100);
+      
+      // 5秒后停止尝试，防止一直运行占内存
+      setTimeout(function() { clearInterval(timer); }, 5000);
+    })();
+  </script>
+  <!-- ===== 自动跳过开屏补丁结束 ===== -->
 </body>
 </html>
